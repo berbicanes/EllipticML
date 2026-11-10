@@ -1,0 +1,290 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usepackage[T1]{fontenc}
+\usepackage{sourceserifpro}
+\usepackage[default]{sourcesanspro}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+
+\input{../report/numbers.tex}
+
+% ---------------------------------------------------------------- theme (matches the pitch)
+\definecolor{paper}{HTML}{FAFAF7}
+\definecolor{cover}{HTML}{F0EFEA}
+\definecolor{ink}{HTML}{222222}
+\definecolor{muted}{HTML}{6B6B6B}
+\definecolor{accent}{HTML}{1F4E8C}
+\definecolor{illicit}{HTML}{B03A2E}
+\definecolor{rule}{HTML}{DADADA}
+
+\setbeamercolor{background canvas}{bg=paper}
+\setbeamercolor{normal text}{fg=ink}
+\setbeamercolor{frametitle}{fg=ink}
+\setbeamercolor{itemize item}{fg=ink}
+\setbeamercolor{enumerate item}{fg=ink}
+\setbeamercolor{alerted text}{fg=illicit}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}{\small\raise0.25ex\hbox{$\bullet$}}
+\setbeamertemplate{enumerate items}[default]
+\setbeamerfont{frametitle}{family=\rmfamily,series=\bfseries,size=\LARGE}
+
+\setbeamertemplate{frametitle}{%
+  \vspace*{0.55cm}%
+  \hspace*{0.15cm}\insertframetitle\par
+  \vspace*{0.12cm}%
+  \hspace*{0.15cm}{\color{ink}\rule{\dimexpr\paperwidth-1.65cm\relax}{0.6pt}}%
+  \vspace*{-0.1cm}%
+}
+\setbeamertemplate{footline}{%
+  \hfill{\color{muted}\scriptsize\insertframenumber\,/\,\inserttotalframenumber}\hspace*{0.75cm}%
+  \vspace*{0.35cm}%
+}
+\setbeamersize{text margin left=0.75cm, text margin right=0.75cm}
+
+\newcommand{\takeaway}[1]{%
+  \par\vspace{0.25cm}{\color{accent}\rule[0.2ex]{0.5cm}{2pt}}\hspace{0.25cm}%
+  \begin{minipage}[t]{0.9\linewidth}\rmfamily\itshape #1\end{minipage}}
+\newcommand{\pv}[1]{\textit{p}\,#1}
+\newcommand{\fig}[2][\linewidth]{\includegraphics[width=#1]{../reports/figures/#2.pdf}}
+\newcommand{\stat}[2]{{\rmfamily\bfseries\Huge\color{#1}#2}}
+
+\begin{document}
+
+% ---------------------------------------------------------------- 1 title
+{
+\setbeamercolor{background canvas}{bg=cover}
+\setbeamertemplate{footline}{}
+\begin{frame}[plain]
+  \vspace*{0.6cm}
+  {\small\color{muted}International University of Sarajevo $\cdot$ EE418 $\cdot$ Final project, 2026}
+
+  \vspace{1.6cm}
+  {\color{accent}\rule{1cm}{2.5pt}}\par\vspace{0.3cm}
+  {\rmfamily\bfseries\fontsize{34}{38}\selectfont Detecting Illicit Bitcoin\\[0.1cm]Transactions\par}
+  \vspace{0.35cm}
+  {\large\color{ink!80}Graphs, imbalance and drift on the Elliptic dataset\par}
+
+  \vspace{1.4cm}
+  {\small\textbf{Anes Berbi\'c} (210302141)\hfill
+   {\color{muted}github.com/berbicanes/EllipticML}}
+\end{frame}
+}
+
+% ---------------------------------------------------------------- 2 question + answer
+\begin{frame}{The question, and the short answer}
+  {\rmfamily\itshape\Large Can we tell illicit Bitcoin transactions apart from licit ones,
+  using their features and their position in the transaction graph?\par}
+  \vspace{0.6cm}
+  \begin{columns}[T]
+    \begin{column}{0.32\textwidth}
+      \stat{accent}{\MainRFFone}\par\vspace{0.1cm}
+      \small illicit F1 on unseen future weeks (Random Forest)
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \stat{accent}{+0.06}\par\vspace{0.1cm}
+      \small F1 from neighbour features: the graph helps, mostly through its simplest summary
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \stat{illicit}{\DriftRFPost}\par\vspace{0.1cm}
+      \small F1 after the dark market shutdown: every model fails
+    \end{column}
+  \end{columns}
+  \takeaway{Detection works, until criminals change behaviour. Most of this talk is
+  about measuring that honestly.}
+\end{frame}
+
+% ---------------------------------------------------------------- 3 data
+\begin{frame}{The data moves under our feet}
+  \begin{columns}[c]
+    \begin{column}{0.62\textwidth}\fig{eda_labels_over_time}\end{column}
+    \begin{column}{0.36\textwidth}\small
+      \begin{itemize}\setlength\itemsep{0.35em}
+        \item 203,769 transactions, 49 two-week steps, 234,355 flows
+        \item Illicit share: \EdaShareTrain{} train, \EdaShareTest{} test, $\approx$0 in steps 43--46
+        \item Every step is a separate graph (\EdaComponents{} components)
+        \item Illicit neighbours of illicit: \EdaHomIll{} vs \EdaHomLic{} for licit
+        \item Illicit transactions never have more than 3 outputs
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------- 4 protocol
+\begin{frame}{How we avoided fooling ourselves}
+  \small
+  \begin{tabular}{p{4.3cm}p{9.3cm}}
+    \toprule
+    \textbf{Risk} & \textbf{What we did} \\
+    \midrule
+    Training on the future & Paper's temporal split: steps 1--34 train, 35--49 test \\
+    Tuning on the test set & Forward folds inside steps 1--34 pick hyper-parameters \emph{and} threshold \\
+    A disguised clock & Time step dropped as a feature (keeping it cut LR's F1 from 0.51 to 0.36) \\
+    Leaking through preprocessing & Scaling and SMOTE inside the pipeline; graph features label-free \\
+    Lucky seeds & Every model $\times$ 5 seeds \\
+    False precision & 95\% CIs by resampling \emph{time steps}, paired tests between models \\
+    Silent bugs & Unit tests: no test or future step can reach training \\
+    \bottomrule
+  \end{tabular}
+  \takeaway{First step: reproduce the paper. Our Random Forest: \RepRFAF{} $\pm$ \RepRFAFSd{} vs 0.788 published.}
+\end{frame}
+
+% ---------------------------------------------------------------- 5 main comparison
+\begin{frame}{Model comparison: two winners, wide error bars}
+  \begin{columns}[c]
+    \begin{column}{0.58\textwidth}\small
+      \begin{tabular}{lccc}
+        \toprule
+        & F1 & 95\% CI & PR-AUC \\
+        \midrule
+        Random Forest & \textbf{\MainRFFone} & \MainRFFoneCI & \MainRFPRAUC \\
+        XGBoost       & \textbf{\MainXGBFone} & \MainXGBFoneCI & \textbf{\MainXGBPRAUC} \\
+        MLP           & \MainMLPFone & \MainMLPFoneCI & \MainMLPPRAUC \\
+        Logistic Reg. & \MainLRFone & \MainLRFoneCI & \MainLRPRAUC \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+    \begin{column}{0.4\textwidth}\small
+      \begin{itemize}\setlength\itemsep{0.4em}
+        \item RF vs XGBoost: paired test \pv{\PairedXGBRFFoneP} $\rightarrow$ \textbf{tied}
+        \item Both beat MLP and LR, \pv{<0.001}
+        \item An analyst reviewing the top 100 per step finds \MainXGBBudget{} of all illicit
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \takeaway{The interval is 0.27 wide: the test set is 15 time steps, not 16,670
+  independent rows. Many published differences on this benchmark are smaller.}
+\end{frame}
+
+% ---------------------------------------------------------------- 6 imbalance
+\begin{frame}{Imbalance: re-balancing barely matters}
+  \fig[0.78\linewidth]{e03_imbalance}
+  \takeaway{SMOTE and class weights move PR-AUC by about one point. Threshold tuning
+  helps weak models (LR \ImbLRNoneFixedFone{} $\rightarrow$ \ImbLRNoneTunedFone) but not the trees:
+  the best threshold drifts over time too.}
+\end{frame}
+
+% ---------------------------------------------------------------- 7 graph
+\begin{frame}{Does the graph help?}
+  \begin{columns}[c]
+    \begin{column}{0.56\textwidth}\fig{e04_graph}\end{column}
+    \begin{column}{0.42\textwidth}\small
+      \begin{itemize}\setlength\itemsep{0.45em}
+        \item \textbf{Neighbour features: yes.} Local $\rightarrow$ local + aggregated:
+              \GraphRFLFFone{} $\rightarrow$ \GraphRFAFFone{} (\pv{<0.001})
+        \item \textbf{More graph: barely.} Structure features and GNN embeddings: $\le$\,0.02 F1, no PR-AUC
+        \item \textbf{GNNs alone: no,} but direction matters: our directed DirSAGE
+              \GraphDirSAGEgraphFone{} vs GCN \GraphGCNgraphFone{}
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------- 8 hybrid paradox
+\begin{frame}{A better GNN makes a worse hybrid}
+  \begin{columns}[c]
+    \begin{column}{0.46\textwidth}
+      \small Weber et al.\ feed GCN embeddings to a Random Forest. We tried the
+      embeddings of our stronger DirSAGE instead.\par\vspace{0.4cm}
+      \stat{illicit}{$-$\HybRFFoneDrop}\par\vspace{0.1cm}
+      \small F1 for the Random Forest (\pv{\HybRFFoneP})
+    \end{column}
+    \begin{column}{0.48\textwidth}\footnotesize
+      \begin{tabular}{@{}lcc@{}}
+        \toprule
+        & GCN & DirSAGE \\
+        \midrule
+        PR-AUC, train rows & \MemGCNTrainPRAUC & \textbf{\MemDirSAGETrainPRAUC} \\
+        PR-AUC, test rows & \MemGCNTestPRAUC & \MemDirSAGETestPRAUC \\
+        RF weight on embeddings & \MemGCNRFImp & \textbf{\MemDirSAGERFImp} \\
+        \bottomrule
+      \end{tabular}
+    \end{column}
+  \end{columns}
+  \takeaway{The GNN memorised the training labels, the forest copied it. The published
+  hybrid works because its GNN is weak; embeddings must be made out-of-fold.}
+\end{frame}
+
+% ---------------------------------------------------------------- 9 unsupervised
+\begin{frame}{Without labels: crime is typical, not anomalous}
+  \begin{columns}[c]
+    \begin{column}{0.48\textwidth}\fig{e06_anomaly_scores}\end{column}
+    \begin{column}{0.5\textwidth}\fig{e06_label_efficiency}\end{column}
+  \end{columns}
+  \takeaway{Flag the most anomalous: PR-AUC \IFAFUnsupAnomalousPRAUC{} (worse than random).
+  Flag the most \emph{typical}: \IFAFUnsupTypicalPRAUC{}, no labels. XGBoost needs about
+  \LabelsToBeatIF{} labels to beat that.}
+\end{frame}
+
+% ---------------------------------------------------------------- 10 collapse
+\begin{frame}{Every model fails after the dark market shutdown}
+  \begin{columns}[c]
+    \begin{column}{0.62\textwidth}\fig{e07_f1_per_step}\end{column}
+    \begin{column}{0.36\textwidth}\small
+      Mean F1 per step, Random Forest:\par\vspace{0.2cm}
+      \begin{tabular}{lc}
+        steps 35--42 & \textbf{\DriftRFPre} \\
+        steps 43--49 & \textbf{\color{illicit}\DriftRFPost} \\
+      \end{tabular}\par\vspace{0.4cm}
+      The pooled F1 of $\approx$0.8 averages two regimes: near-perfect detection of
+      known crime, and almost none of what replaced it.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------- 11 why
+\begin{frame}{Why: the new crime looks licit}
+  \centering\fig[0.6\linewidth]{e07_novelty}\par
+  \vspace{-0.1cm}\raggedright
+  \begin{columns}[T]
+    \begin{column}{0.32\textwidth}\small
+      \textbf{Closer to licit than to known illicit:} \NovelPre{} before, \textbf{\color{illicit}\NovelPost} after
+    \end{column}
+    \begin{column}{0.32\textwidth}\small
+      \textbf{Features shifted (KS\,$>$\,0.3):} \AdvIllicitKSShare{} for illicit, \AdvLicitKSShare{} for licit
+    \end{column}
+    \begin{column}{0.32\textwidth}\small
+      \textbf{Retraining every step:} post-shutdown F1 \WFStaticPost{} $\rightarrow$ \WFExpandingPost{}
+    \end{column}
+  \end{columns}
+  \takeaway{The bottleneck is labels for the new behaviour, not the model.
+  (\ClockCount{} hidden ``clock'' features were removed first.)}
+\end{frame}
+
+% ---------------------------------------------------------------- 12 lessons
+\begin{frame}{What I would tell a compliance team}
+  \begin{enumerate}\setlength\itemsep{0.55em}
+    \item Use a tree ensemble on the transaction's own and its neighbours' features.
+    \item Report uncertainty over \emph{time}, not over rows; test differences in pairs.
+    \item Do not assume crime is anomalous: here it is the most ordinary traffic.
+    \item Plan for regime changes: watch the score distribution, label new cases fast.
+    \item Check stacked models for leakage: a strong upstream model can poison the downstream one.
+  \end{enumerate}
+  \vspace{0.3cm}
+  {\small\color{muted}Limitations: anonymised features; only 169 illicit test transactions after step 43;
+  small GNN search; labels come from heuristics.}
+\end{frame}
+
+% ---------------------------------------------------------------- 13 thanks
+{
+\setbeamercolor{background canvas}{bg=cover}
+\begin{frame}
+  \vspace*{0.4cm}
+  {\color{accent}\rule{1cm}{2.5pt}}\par\vspace{0.3cm}
+  {\rmfamily\bfseries\fontsize{34}{38}\selectfont Thank you\par}
+  \vspace{0.3cm}
+  {\large Questions are welcome.\par}
+  \vspace{1.2cm}
+  \small
+  \textbf{Code, results, report:} github.com/berbicanes/EllipticML\\[0.15cm]
+  {\color{muted}\texttt{make all} rebuilds every number from the raw data;
+  every figure in this deck is generated by the pipeline.}\par
+  \vspace{0.9cm}
+  {\scriptsize\color{muted}
+  Weber et al. (2019), Anti-Money Laundering in Bitcoin, KDD Workshop, arXiv:1908.02591 $\cdot$
+  Kipf \& Welling (2017), ICLR $\cdot$ Hamilton et al. (2017), NeurIPS $\cdot$
+  Rossi et al. (2023), LoG $\cdot$ Liu et al. (2008), ICDM $\cdot$ Lundberg \& Lee (2017), NeurIPS\par}
+\end{frame}
+}
+
+\end{document}
