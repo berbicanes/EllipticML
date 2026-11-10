@@ -32,6 +32,15 @@ from torch import nn
 from elliptic import evaluate, graph
 
 
+def default_device() -> torch.device:
+    """Apple-silicon GPU when available (about 6x faster here), else CPU.
+
+    Note: results on MPS are not bit-for-bit reproducible across runs; the
+    five-seed averages are.
+    """
+    return torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+
+
 def to_torch_sparse(m: sp.spmatrix) -> torch.Tensor:
     m = m.tocoo()
     idx = torch.as_tensor(np.vstack([m.row, m.col]), dtype=torch.long)
@@ -53,9 +62,20 @@ class GraphTensors:
     m_in: torch.Tensor  # mean over in-neighbours (senders)
     m_out: torch.Tensor  # mean over out-neighbours (receivers)
 
+    @property
+    def device(self) -> torch.device:
+        return self.x.device
+
+    def to(self, device: torch.device) -> GraphTensors:
+        return GraphTensors(*(t.to(device) for t in (self.x, self.a_hat, self.m_in, self.m_out)))
+
 
 def build_tensors(
-    nodes: pd.DataFrame, edges: pd.DataFrame, cols: list[str], fit_mask: np.ndarray
+    nodes: pd.DataFrame,
+    edges: pd.DataFrame,
+    cols: list[str],
+    fit_mask: np.ndarray,
+    device: torch.device | None = None,
 ) -> GraphTensors:
     """Standardise features with statistics from ``fit_mask`` rows only."""
     X = nodes[cols].to_numpy(np.float32)
@@ -70,7 +90,7 @@ def build_tensors(
         a_hat=to_torch_sparse(graph.normalized_adjacency(edges, n)),
         m_in=to_torch_sparse(mean_operator(a.T.tocsr())),
         m_out=to_torch_sparse(mean_operator(a)),
-    )
+    ).to(device or torch.device("cpu"))
 
 
 class GCN(nn.Module):
@@ -165,12 +185,13 @@ def train(
     from which the caller picks the epoch count for the final refit.
     """
     torch.manual_seed(seed)
-    model = make_gnn(cfg.kind, g.x.shape[1], cfg.hidden, cfg.dropout)
+    dev = g.device
+    model = make_gnn(cfg.kind, g.x.shape[1], cfg.hidden, cfg.dropout).to(dev)
     opt = torch.optim.Adam(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
-    w = torch.tensor([1 - cfg.illicit_weight, cfg.illicit_weight], dtype=torch.float32)
+    w = torch.tensor([1 - cfg.illicit_weight, cfg.illicit_weight], dtype=torch.float32, device=dev)
     loss_fn = nn.CrossEntropyLoss(weight=w)
-    y_t = torch.as_tensor(y, dtype=torch.long)
-    tr = torch.as_tensor(np.flatnonzero(train_mask))
+    y_t = torch.as_tensor(y, dtype=torch.long, device=dev)
+    tr = torch.as_tensor(np.flatnonzero(train_mask), device=dev)
     history = []
     for epoch in range(1, cfg.epochs + 1):
         model.train()
@@ -193,10 +214,10 @@ def train(
 @torch.no_grad()
 def predict(model: nn.Module, g: GraphTensors) -> np.ndarray:
     model.eval()
-    return torch.softmax(model(g), dim=1)[:, 1].numpy()
+    return torch.softmax(model(g), dim=1)[:, 1].cpu().numpy()
 
 
 @torch.no_grad()
 def embeddings(model: nn.Module, g: GraphTensors) -> np.ndarray:
     model.eval()
-    return model.embed(g).numpy()
+    return model.embed(g).cpu().numpy()
