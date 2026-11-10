@@ -87,5 +87,31 @@ def run_model(
     return RunResult(name, score, threshold, time.perf_counter() - t0)
 
 
+def tune(
+    table: pd.DataFrame,
+    cols: list[str],
+    name: str,
+    grid: list[dict],
+    imbalance: str = "none",
+    seed: int = config.DEFAULT_SEED,
+) -> tuple[dict, pd.DataFrame]:
+    """Grid search over forward folds, ranked by mean validation PR-AUC.
+
+    PR-AUC is threshold-free, so tuning does not depend on the cut-off we pick
+    afterwards. Test steps are never used.
+    """
+    folds = list(split.forward_folds(table))
+    rows = []
+    for params in grid:
+        aps = []
+        for f in folds:
+            tr, va = xy(table, cols, f.train), xy(table, cols, f.test)
+            m = models.make_model(name, imbalance, seed=seed, y_train=tr.y, **dict(params))
+            aps.append(evaluate.pr_auc(va.y, fit_predict(m, tr, va)))
+        rows.append({"params": params, "pr_auc_mean": np.mean(aps), "pr_auc_sd": np.std(aps)})
+    cv = pd.DataFrame(rows).sort_values("pr_auc_mean", ascending=False, ignore_index=True)
+    return dict(cv.loc[0, "params"]), cv
+
+
 def test_xy(table: pd.DataFrame, cols: list[str]) -> XY:
     return xy(table, cols, split.temporal_split(table).test)

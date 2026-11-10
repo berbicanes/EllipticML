@@ -33,6 +33,22 @@ def load_json(name: str, folder: Path = config.RESULTS) -> Any:
     return json.loads((folder / f"{name}.json").read_text())
 
 
+def save_scores(scores: dict[str, np.ndarray], test_rows: pd.DataFrame, name: str) -> Path:
+    """Store test-set scores (one column per run) so later analyses reuse them."""
+    folder = config.RESULTS / "scores"
+    folder.mkdir(parents=True, exist_ok=True)
+    df = test_rows[["node", "time_step", "label"]].reset_index(drop=True).copy()
+    for k, v in scores.items():
+        df[k] = np.asarray(v, dtype=np.float32)
+    path = folder / f"{name}.parquet"
+    df.to_parquet(path, index=False)
+    return path
+
+
+def load_scores(name: str) -> pd.DataFrame:
+    return pd.read_parquet(config.RESULTS / "scores" / f"{name}.parquet")
+
+
 def save_table(df: pd.DataFrame, name: str, folder: Path = config.TABLES, **latex_kw) -> None:
     """Write a table as CSV (for reading), Markdown (README) and LaTeX (report)."""
     folder.mkdir(parents=True, exist_ok=True)
