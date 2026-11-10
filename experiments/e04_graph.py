@@ -25,12 +25,14 @@ from __future__ import annotations
 
 import ast
 import itertools
+import sys
 import warnings
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from elliptic import config, data, evaluate, gnn, graph, io, runner, split
+from elliptic import config, data, evaluate, gnn, graph, io, plots, runner, split
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -68,7 +70,64 @@ def select_gnn(nodes, edges, cols, kind):
     return cfg, threshold, log
 
 
+def figure(df: pd.DataFrame) -> None:
+    """Dot plot of illicit F1 with 95% block-bootstrap CIs, PR-AUC as a label."""
+    plots.setup()
+    order = [
+        ("GCN", "graph (GNN)"),
+        ("SkipGCN", "graph (GNN)"),
+        ("DirSAGE", "graph (GNN)"),
+        *[
+            (m, fs)
+            for m in ("RandomForest", "XGBoost")
+            for fs in ("LF", "LF+G", "AF", "AF+G", "AF+NE", "AF+G+NE")
+        ],
+    ]
+    rows = [df[(df["Model"] == m) & (df["Features"] == f)].iloc[0] for m, f in order]
+    fig, ax = plt.subplots(figsize=(7.5, 5.6))
+    y = np.arange(len(rows))[::-1].astype(float)
+    y[:3] += 1.0  # gap between the GNN block and the tree blocks
+    y[3:9] += 0.5
+    for yi, r in zip(y, rows, strict=True):
+        lo, hi = (float(v) for v in r["F1 95% CI"].strip("[]").split(","))
+        color = plots.MODEL_COLORS.get(r["Model"], plots.MUTED)
+        ax.plot([lo, hi], [yi, yi], color=color, lw=2, alpha=0.35)
+        ax.plot(r["F1"], yi, "o", color=color, ms=7)
+        ax.text(
+            1.005,
+            yi,
+            f"{r['PR-AUC']:.3f}",
+            va="center",
+            fontsize=8,
+            color=plots.MUTED,
+            transform=ax.get_yaxis_transform(),
+        )
+    labels = [
+        r["Model"]
+        if r["Features"] == "graph (GNN)"
+        else f"{plots.short(r['Model'])}  {r['Features']}"
+        for r in rows
+    ]
+    ax.set_yticks(y, labels)
+    ax.text(
+        1.005,
+        y.max() + 0.9,
+        "PR-AUC",
+        fontsize=8,
+        color=plots.MUTED,
+        transform=ax.get_yaxis_transform(),
+    )
+    ax.set_xlim(0.2, 1.0)
+    ax.set_xlabel("illicit F1 on test steps (dot: mean of 5 seeds; bar: 95% CI over steps)")
+    ax.set_title("GNNs vs tree models with graph features")
+    ax.grid(axis="y", visible=False)
+    plots.save(fig, "e04_graph")
+
+
 def main() -> None:
+    if "--figure-only" in sys.argv:
+        figure(pd.read_csv(config.TABLES / "e04_graph.csv"))
+        return
     d = data.load()
     nodes, edges = d.nodes, d.edges
     af = data.feature_columns("AF")
@@ -187,6 +246,7 @@ def main() -> None:
     io.save_scores(scores, test_rows, "e04_graph")
     io.save_table(summary_df, "e04_graph")
     io.save_table(paired_df, "e04_paired")
+    figure(summary_df)
     io.save_json(
         {
             "summary": summary,

@@ -26,6 +26,7 @@ MODEL_COLORS = {
     "MLP": "#009E73",
     "GCN": "#CC79A7",
     "SkipGCN": "#E69F00",
+    "DirSAGE": "#6A3D9A",
     "RF+NE": "#56B4E9",
     "IsolationForest": "#000000",
 }
