@@ -65,11 +65,14 @@ def setup() -> None:
     )
 
 
-def mark_timeline(ax, train_end: float = 34.5, shutdown: bool = True, label: bool = True) -> None:
+def mark_timeline(
+    ax, train_end: float = 34.5, shutdown: bool = True, label: bool = True, shade: bool = True
+) -> None:
     """Shade the test period and mark the dark market shutdown on a time-step axis."""
     lo, hi = ax.get_ylim()
-    ax.axvspan(train_end, config.N_STEPS + 0.5, color="#F2F2F2", zorder=0)
-    if label:
+    if shade:
+        ax.axvspan(train_end, config.N_STEPS + 0.5, color="#F2F2F2", zorder=0)
+    if label and shade:
         ax.text(train_end + 0.4, hi, "test period", va="top", ha="left", color=MUTED, fontsize=8)
     if shutdown:
         ax.axvline(config.DARK_MARKET_STEP - 0.5, color=ILLICIT, ls="--", lw=1)
