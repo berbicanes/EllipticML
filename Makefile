@@ -54,6 +54,7 @@ e00 e01 e02 e03 e04 e05 e05b e06 e07 e08:
 	$(PY) experiments/$@_*.py
 
 report:
+	$(PY) report/build_numbers.py
 	cd report && tectonic main.tex
 
 slides:

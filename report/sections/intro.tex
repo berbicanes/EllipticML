@@ -1,0 +1,42 @@
+\section{Introduction}
+
+Bitcoin transactions are public, but the people behind them are not. That
+combination makes the blockchain attractive for ransomware payments, darknet
+markets and laundering, and it also gives investigators a complete record to
+search. The question is how to search it. A compliance team cannot review
+every transaction, so it needs a model that ranks them by how suspicious they
+are and that keeps working as criminals change their behaviour.
+
+The Elliptic Data Set~\cite{weber2019} is the standard public benchmark for
+this problem: 203,769 real Bitcoin transactions over 49 time steps, of which
+4,545 are labelled illicit and 42,019 licit, linked by 234,355 payment flows.
+Weber et al.\ found that a Random Forest on the tabular features beat a Graph
+Convolutional Network (GCN), and that \emph{every} model stopped detecting
+illicit activity after a dark market was shut down at time step 43.
+
+This project asks: \emph{can we tell illicit Bitcoin transactions apart from
+licit ones, using their features and their position in the transaction graph?}
+We answer it in five parts, each with a protocol designed to avoid the ways a
+study on this dataset can fool itself.
+
+\begin{enumerate}
+  \item \textbf{Reproduction.} We first re-run the published baselines on the
+        published split. Matching them is what makes everything after it credible.
+  \item \textbf{A fair model comparison.} Hyper-parameters and decision
+        thresholds are chosen on time-ordered validation folds only; every model
+        runs with five seeds; every result has a confidence interval that
+        respects the time structure, and model differences are tested.
+  \item \textbf{Does the graph help?} We compare tabular features, label-free
+        graph statistics, three graph neural networks (including a directed
+        variant we motivate from the data) and the hybrid of GNN embeddings
+        with a tree model.
+  \item \textbf{Without labels.} We measure whether illicit transactions stand
+        out as anomalies, and how many labels a supervised model needs before it
+        beats the label-free detector.
+  \item \textbf{Why models fail over time.} We show what changed after the dark
+        market shutdown, whether the new illicit transactions resemble anything
+        seen in training, and whether retraining fixes it.
+\end{enumerate}
+
+All code, results and figures are reproducible with one command from the
+public repository.\footnote{\url{https://github.com/berbicanes/EllipticML}}

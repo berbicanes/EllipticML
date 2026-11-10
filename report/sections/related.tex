@@ -1,0 +1,34 @@
+\section{Related Work}
+
+\textbf{The Elliptic benchmark.} Weber et al.~\cite{weber2019} released the
+dataset with a temporal split (time steps 1--34 for training, 35--49 for
+testing) and compared Logistic Regression, Random Forest, an MLP and GCNs.
+Random Forest on all features reached an illicit F1 of 0.788; concatenating GCN
+node embeddings to the features raised it to 0.796. The best pure graph model,
+EvolveGCN~\cite{pareja2020}, reached 0.720. They also reported that even a
+Random Forest retrained after every test step could not recover after the dark
+market shutdown. Elmougy and Liu~\cite{elmougy2023} extended the data with
+wallet addresses and further features (Elliptic++).
+
+\textbf{Graph neural networks.} The GCN~\cite{kipf2017} propagates node
+features over a symmetric, degree-normalised adjacency matrix. GraphSAGE
+\cite{hamilton2017} keeps a separate weight for a node's own representation and
+for its aggregated neighbours. Rossi et al.~\cite{rossi2023} showed that
+treating in- and out-edges separately helps on graphs where neighbours tend to
+have \emph{different} labels; we adopt this idea for payment flows, which are
+inherently directed.
+
+\textbf{Imbalanced classification.} With 2--10\% positives, accuracy and ROC-AUC
+are misleading; the precision--recall curve is more informative
+\cite{saito2015}. SMOTE~\cite{chawla2002} creates synthetic minority samples;
+class weights re-balance the loss. For F1, the optimal decision threshold is
+generally not 0.5 and should be chosen on held-out data~\cite{lipton2014}.
+
+\textbf{Anomaly detection and drift.} Isolation Forest~\cite{liu2008} scores
+points by how easily random splits isolate them, without labels. Concept drift,
+a change in the joint distribution of features and labels over time, is the
+central obstacle for deployed fraud models~\cite{gama2014}.
+
+\textbf{Uncertainty.} When observations come in dependent blocks, the bootstrap
+should resample whole blocks~\cite{kunsch1989}. Transactions of the same time
+step share a market regime and graph, so we resample time steps.

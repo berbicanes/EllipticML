@@ -1,0 +1,88 @@
+\section{Method}
+\label{sec:method}
+
+\subsection{Evaluation protocol}
+
+\textbf{Split.} We keep the split of Weber et al.: labelled transactions of steps
+1--34 (29,894 rows) for training, steps 35--49 (16,670 rows) for testing.
+Unlabelled rows are never used by a supervised model. A random split would place
+transactions from the same two weeks, and from the future, on both sides.
+
+\textbf{Validation without touching the test set.} All choices are made on
+\emph{expanding-window folds} inside the training period: the validation blocks
+are steps 20--22, 23--25, 26--28, 29--31 and 32--34, and each fold trains on all
+steps before its block. Hyper-parameters are chosen by mean validation PR-AUC.
+The decision threshold is then the one that maximises F1 on the pooled
+out-of-fold predictions~\cite{lipton2014}. The final model is refit on steps
+1--34 and applied once to the test steps.
+
+\textbf{No time step as a feature.} Weber et al.\ include the time step among the
+local features. Under a temporal split every test value lies outside the
+training range, so the column can only mislead. In our reproduction, removing it
+raised Logistic Regression's F1 on local features from 0.36 to 0.51. We keep it
+only where we reproduce the paper.
+
+\textbf{Leakage guards.} Scaling and SMOTE live inside the model pipeline and are
+refit on every training fold. Graph features use the edge list only, never labels.
+Unit tests assert that no test step and no future step ever reaches training.
+
+\textbf{Metrics.} The positive class is \emph{illicit}. We report precision,
+recall and F1 at the chosen threshold, PR-AUC (average precision, threshold-free
+and the most informative single number under imbalance~\cite{saito2015}),
+ROC-AUC, and an \emph{analyst budget} metric: the share of all illicit test
+transactions caught if an analyst reviews the 100 highest-scored transactions of
+every time step.
+
+\textbf{Uncertainty.} Each stochastic model runs with five seeds. For confidence
+intervals we average the five seeds' scores and draw 1,000 bootstrap samples of
+\emph{time steps} (not rows): a resample is 15 test steps drawn with replacement,
+each bringing all of its transactions~\cite{kunsch1989}. Two models are compared
+with a paired bootstrap (2,000 samples) on the same resampled steps; the p-value
+is twice the share of resamples in which the difference changes sign.
+
+\subsection{Models}
+
+\textbf{Tabular.} Logistic Regression ($L_2$, standardised inputs), Random
+Forest~\cite{breiman2001}, XGBoost~\cite{chen2016} and an MLP (PyTorch, Adam).
+Search spaces: LR $C\in\{0.01,0.1,1,10\}$; RF 500 trees, max features
+$\in\{\sqrt{d}, 0.3d, 50\}$, min leaf size $\in\{1,3\}$; XGBoost 600 rounds,
+depth $\in\{4,6,8\}$, learning rate $\in\{0.03, 0.1\}$; MLP hidden layers
+$\in\{(50),(128,64)\}$, dropout $\in\{0,0.2\}$, weight decay $\in\{0,10^{-4}\}$.
+
+\textbf{Imbalance strategies.} \emph{None}, \emph{class weights} (inverse class
+frequency) and \emph{SMOTE}~\cite{chawla2002} on training folds only, each with
+the fixed 0.5 threshold and with the tuned threshold.
+
+\textbf{Graph structure features (G).} Nine label-free statistics per
+transaction: in- and out-degree, number of transactions reachable within two hops
+upstream and downstream, mean and maximum neighbour degree, local clustering
+coefficient, and PageRank~\cite{page1999} on the graph and on its reverse.
+
+\textbf{Graph neural networks.} All three are trained full-batch on the whole
+graph with a weighted cross-entropy (0.3 licit / 0.7 illicit, as
+in~\cite{weber2019}) on labelled training nodes.
+\begin{itemize}
+  \item \textbf{GCN}~\cite{kipf2017}: $H=\mathrm{ReLU}(\hat{A}XW_0)$,
+        logits $=\hat{A}HW_1$, with $\hat{A}=D^{-1/2}(A+A^\top+I)D^{-1/2}$.
+  \item \textbf{Skip-GCN}~\cite{weber2019}: GCN plus a linear skip connection
+        from the raw features to the output.
+  \item \textbf{DirSAGE} (ours, after~\cite{hamilton2017,rossi2023}): two
+        layers of $h_v' = \mathrm{ReLU}(W_s h_v + W_{in}\,\overline{h}_{N^{in}(v)}
+        + W_{out}\,\overline{h}_{N^{out}(v)})$, where $\overline{h}$ is the mean
+        over senders or receivers. Unlike the GCN, it can tell its own features
+        from its neighbours' and senders from receivers. A unit test with a
+        synthetic graph shows the GCN failing exactly this distinction.
+\end{itemize}
+Configuration (learning rate $\in\{10^{-3}, 3\cdot10^{-3}\}$, dropout
+$\in\{0,0.3\}$) and epoch count (up to 1,000, checked every 25) are chosen by
+PR-AUC on steps 30--34 after training on 1--29; the threshold is F1-optimal on
+the same steps. Because no edge crosses time steps, the test graphs are
+disconnected from the training graphs, and full-graph training leaks nothing.
+
+\textbf{Hybrid (NE).} Following~\cite{weber2019}, the 100-dimensional hidden
+layer of the GCN is appended to the features of a tree model.
+
+\textbf{Unsupervised.} Isolation Forest~\cite{liu2008} (500 trees, 4,096 samples
+per tree) fitted on \emph{all} 136,265 transactions of steps 1--34, labelled or
+not, without using any label; and, as a semi-supervised middle ground, on known
+licit transactions only.

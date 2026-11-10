@@ -1,0 +1,62 @@
+\section{Discussion}
+
+\textbf{Answer to the research question.} Yes, illicit and licit transactions
+can be told apart, with an illicit F1 around 0.8 and PR-AUC around 0.8 on unseen
+future time steps, and the transaction graph helps. But almost all of the graph's
+value is captured by the simplest summary: the features of a transaction's direct
+neighbours. Learning from the graph end-to-end (GNNs), adding structural
+statistics or adding GNN embeddings does not beat a tree ensemble on those
+features. The one graph idea that clearly paid off was respecting the
+\emph{direction} of payments, which lifted a GNN by about 0.15 F1.
+
+\textbf{What a practitioner should take away.}
+\begin{enumerate}
+  \item \emph{Use a tree ensemble on local + neighbour features.} Random Forest
+        and XGBoost are tied, strong and cheap. Neither needs re-balancing.
+  \item \emph{Report uncertainty over time, not over rows.} With 15 test steps,
+        the 95\% interval of F1 is about 0.27 wide. Most published differences on
+        this benchmark are smaller than that.
+  \item \emph{Do not assume crime is anomalous.} Here it is the opposite:
+        illicit transactions are typical, and the anomalies are licit.
+  \item \emph{Plan for regime changes, not for average performance.} After the
+        dark market shutdown every model fails, retraining recovers little, and
+        the new illicit transactions look like licit ones. Monitoring the score
+        distribution and fast labelling of new cases matter more than model
+        choice.
+  \item \emph{Check embeddings for leakage.} A hybrid that feeds a tree with
+        embeddings of a GNN trained on the same labels is only safe while the GNN
+        is weak; out-of-fold embeddings are required otherwise.
+\end{enumerate}
+
+\textbf{Limitations.}
+(i) The features are anonymised, so we cannot say \emph{what} the model learned
+in domain terms, only which group of features it uses.
+(ii) After step 43 there are only \EdaIllicitPost{} illicit test transactions,
+and step 46 has almost none; per-step scores there are noisy.
+(iii) The ``typical'' Isolation Forest needs one bit of prior knowledge (the
+direction), which we only know from labelled data; on another network the
+direction may differ.
+(iv) We tuned each GNN over a small grid (four configurations); a larger search
+or temporal GNNs such as EvolveGCN~\cite{pareja2020} might narrow the gap to the
+tree models, though they did not in the original study.
+(v) Labels come from Elliptic's heuristics and are themselves imperfect; 77\% of
+transactions have none.
+
+\textbf{Future work.} Semi-supervised use of the 157,205 unlabelled
+transactions; drift detectors that raise an alarm when the score distribution
+shifts, so retraining is triggered before performance is lost; and the richer
+Elliptic++ data~\cite{elmougy2023}, which adds wallet-level information.
+
+\section{Conclusion}
+
+We reproduced the Elliptic benchmark, then rebuilt its evaluation so that no
+choice depends on the test period and every claim carries a confidence interval.
+Under this protocol, tree ensembles on local and neighbour features remain the
+best detectors (F1 \MainRFFone{}, PR-AUC \MainXGBPRAUC{}); the graph helps through
+neighbour aggregation, and directed message passing is the most effective GNN
+design. Two results contradict common assumptions: illicit transactions are
+\emph{less} anomalous than licit ones, and a better graph model can make a hybrid
+\emph{worse}. Finally, we showed why every model fails after the dark market
+shutdown: the illicit population changed in almost every feature and came to
+resemble licit traffic. Detecting financial crime on a blockchain is less a
+modelling problem than a problem of keeping up with a moving target.

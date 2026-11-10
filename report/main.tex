@@ -1,0 +1,66 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cite}
+
+\input{numbers.tex}
+
+\begin{document}
+
+\title{Detecting Illicit Bitcoin Transactions:\\
+Graphs, Imbalance and Drift on the Elliptic Dataset}
+
+\author{\IEEEauthorblockN{Anes Berbi\'c}
+\IEEEauthorblockA{International University of Sarajevo\\
+EE418 Machine Learning, Student ID 210302141}}
+
+\maketitle
+
+\begin{abstract}
+We study illicit transaction detection on the Elliptic Bitcoin dataset (203,769
+transactions, 49 time steps). After reproducing the published baselines, we
+rebuild the evaluation so that hyper-parameters and thresholds are chosen on
+time-ordered validation folds only, every model runs with five seeds, and every
+result carries a block-bootstrap confidence interval over time steps. Random
+Forest and XGBoost are statistically tied (illicit F1 \MainRFFone{} and
+\MainXGBFone{}). The transaction graph helps mainly through neighbour-aggregated
+features (+0.06 F1); structural features and GNN embeddings add at most 0.02 F1
+and no PR-AUC. A directed GNN we propose beats GCN by about 0.15 F1 but stays below
+the trees, and appending its embeddings to a tree model \emph{lowers} F1 by
+0.12 because the GNN memorises its training labels. Isolation Forest ranks
+transactions worse than random: illicit transactions are typical, not anomalous;
+inverting its score yields PR-AUC \IFAFUnsupTypicalPRAUC{} without labels.
+Finally, we explain why all models fail after a dark market shutdown: after it,
+\NovelPost{} of illicit transactions lie closer to licit than to known illicit
+activity, and retraining before every step recovers little.
+\end{abstract}
+
+\input{sections/intro.tex}
+\input{sections/related.tex}
+\input{sections/data.tex}
+\input{sections/method.tex}
+\input{sections/results_a.tex}
+\input{sections/results_b.tex}
+\input{sections/results_c.tex}
+\input{sections/results_d.tex}
+\input{sections/results_e.tex}
+\input{sections/discussion.tex}
+
+\section*{Reproducibility}
+Code, results, figures and this report are at
+\url{https://github.com/berbicanes/EllipticML}. \texttt{make all} rebuilds every
+number from the raw CSV files; \texttt{make report} regenerates
+\texttt{numbers.tex} and compiles this document, so the results in the text and
+tables are read from the results files rather than typed by hand. Unit tests
+check the split for leakage.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
