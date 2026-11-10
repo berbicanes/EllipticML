@@ -1,0 +1,4 @@
+| GNN     |   GNN PR-AUC train rows |   GNN PR-AUC test rows |   RF importance on embeddings |   embedding dims |
+|:--------|------------------------:|-----------------------:|------------------------------:|-----------------:|
+| gcn     |                   0.980 |                  0.584 |                         0.140 |              100 |
+| dirsage |                   1.000 |                  0.704 |                         0.998 |              100 |

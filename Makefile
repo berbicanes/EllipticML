@@ -11,10 +11,10 @@
 PY := uv run python -u
 R := results
 
-.PHONY: all data test lint report slides clean e00 e01 e02 e03 e04 e06 e07 e08
+.PHONY: all data test lint report slides clean e00 e01 e02 e03 e04 e05 e05b e06 e07 e08
 
 all: test $(R)/e00_eda.json $(R)/e01_reproduce.json $(R)/e02_models.json \
-     $(R)/e03_imbalance.json $(R)/e04_graph.json $(R)/e06_unsupervised.json \
+     $(R)/e03_imbalance.json $(R)/e04_graph.json $(R)/e05_hybrid.json $(R)/e05b_memorisation.json $(R)/e06_unsupervised.json \
      $(R)/e07_drift.json $(R)/e08_explain.json
 
 data: data/processed/nodes.parquet
@@ -38,6 +38,10 @@ $(R)/e03_imbalance.json: experiments/e03_imbalance.py $(R)/e02_models.json
 	$(PY) $<
 $(R)/e04_graph.json: experiments/e04_graph.py $(R)/e02_models.json
 	$(PY) $<
+$(R)/e05_hybrid.json: experiments/e05_hybrid.py $(R)/e04_graph.json
+	$(PY) $<
+$(R)/e05b_memorisation.json: experiments/e05b_memorisation.py $(R)/e04_graph.json
+	$(PY) $<
 $(R)/e06_unsupervised.json: experiments/e06_unsupervised.py $(R)/e02_models.json
 	$(PY) $<
 $(R)/e07_drift.json: experiments/e07_drift.py $(R)/e02_models.json $(R)/e04_graph.json
@@ -46,7 +50,7 @@ $(R)/e08_explain.json: experiments/e08_explain.py $(R)/e02_models.json
 	$(PY) $<
 
 # Force a single experiment to re-run: make e04
-e00 e01 e02 e03 e04 e06 e07 e08:
+e00 e01 e02 e03 e04 e05 e05b e06 e07 e08:
 	$(PY) experiments/$@_*.py
 
 report:

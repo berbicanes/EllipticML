@@ -1,0 +1,18 @@
+{
+  "rows": [
+    {
+      "GNN": "gcn",
+      "GNN PR-AUC train rows": 0.979703469184544,
+      "GNN PR-AUC test rows": 0.5841429660222258,
+      "RF importance on embeddings": 0.13966137297869735,
+      "embedding dims": 100
+    },
+    {
+      "GNN": "dirsage",
+      "GNN PR-AUC train rows": 0.9999321893843547,
+      "GNN PR-AUC test rows": 0.7037983981391456,
+      "RF importance on embeddings": 0.9975235630619217,
+      "embedding dims": 100
+    }
+  ]
+}

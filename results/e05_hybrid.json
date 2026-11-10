@@ -1,0 +1,62 @@
+{
+  "summary": [
+    {
+      "Model": "RandomForest",
+      "Features": "AF+NE (DirSAGE)",
+      "Precision": 0.9032296980835819,
+      "Recall": 0.5261311172668514,
+      "F1": 0.6639630488927173,
+      "F1 sd (seeds)": 0.0250390115031061,
+      "F1 95% CI": "[0.445, 0.773]",
+      "PR-AUC": 0.6964074020496416,
+      "ROC-AUC": 0.8664494188370272
+    },
+    {
+      "Model": "XGBoost",
+      "Features": "AF+NE (DirSAGE)",
+      "Precision": 0.8978098538443943,
+      "Recall": 0.5242843951985225,
+      "F1": 0.6618587474603973,
+      "F1 sd (seeds)": 0.012480725442778805,
+      "F1 95% CI": "[0.455, 0.782]",
+      "PR-AUC": 0.6916166803178099,
+      "ROC-AUC": 0.8713972584464846
+    }
+  ],
+  "paired": [
+    {
+      "Model": "RandomForest",
+      "Variant vs AF": "AF+NE (DirSAGE)",
+      "F1 diff": -0.12716416873704695,
+      "F1 diff CI": "[-0.226, -0.063]",
+      "F1 p": 0.0,
+      "PR-AUC diff": -0.06973602892128661,
+      "PR-AUC diff CI": "[-0.134, -0.032]",
+      "PR-AUC p": 0.0
+    },
+    {
+      "Model": "XGBoost",
+      "Variant vs AF": "AF+NE (DirSAGE)",
+      "F1 diff": -0.1172688274311221,
+      "F1 diff CI": "[-0.221, -0.050]",
+      "F1 p": 0.001,
+      "PR-AUC diff": -0.08573951325171258,
+      "PR-AUC diff CI": "[-0.159, -0.046]",
+      "PR-AUC p": 0.0
+    }
+  ],
+  "thresholds": {
+    "RandomForest|AF+DirNE_s0": 0.6184300144300148,
+    "XGBoost|AF+DirNE_s0": 0.44416627287864685,
+    "RandomForest|AF+DirNE_s1": 0.5237282828282828,
+    "XGBoost|AF+DirNE_s1": 0.3860241174697876,
+    "RandomForest|AF+DirNE_s2": 0.48516984126984103,
+    "XGBoost|AF+DirNE_s2": 0.279173344373703,
+    "RandomForest|AF+DirNE_s3": 0.5525039682539683,
+    "XGBoost|AF+DirNE_s3": 0.29126042127609253,
+    "RandomForest|AF+DirNE_s4": 0.409680303030303,
+    "XGBoost|AF+DirNE_s4": 0.6090327501296997,
+    "RandomForest|AF+DirNE_mean": 0.517902481962482,
+    "XGBoost|AF+DirNE_mean": 0.4019313812255859
+  }
+}
