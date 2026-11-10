@@ -1,0 +1,192 @@
+{
+  "test_pr_auc": 0.800077605690854,
+  "shap_group_share": {
+    "aggregated": 0.3516474962234497,
+    "local": 0.6222097873687744,
+    "structure": 0.02614271454513073
+  },
+  "shap_group_share_by_period": {
+    "35-42": {
+      "aggregated": 0.34762057662010193,
+      "local": 0.626891016960144,
+      "structure": 0.02548840455710888
+    },
+    "43-49": {
+      "aggregated": 0.3577451705932617,
+      "local": 0.6151214241981506,
+      "structure": 0.027133410796523094
+    }
+  },
+  "group_permutation": [
+    {
+      "group": "local",
+      "n_features": 93,
+      "pr_auc_drop_mean": 0.694706860805356,
+      "pr_auc_drop_sd": 0.004606983952228631
+    },
+    {
+      "group": "aggregated",
+      "n_features": 72,
+      "pr_auc_drop_mean": 0.059422524353680374,
+      "pr_auc_drop_sd": 0.0032184956460073097
+    },
+    {
+      "group": "structure",
+      "n_features": 9,
+      "pr_auc_drop_mean": 0.0008084974471510465,
+      "pr_auc_drop_sd": 0.00043639154616926905
+    }
+  ],
+  "top_features": [
+    {
+      "feature": "local_52",
+      "group": "local",
+      "mean_abs_shap": 0.8492453098297119
+    },
+    {
+      "feature": "local_02",
+      "group": "local",
+      "mean_abs_shap": 0.4266715943813324
+    },
+    {
+      "feature": "local_58",
+      "group": "local",
+      "mean_abs_shap": 0.422363817691803
+    },
+    {
+      "feature": "local_89",
+      "group": "local",
+      "mean_abs_shap": 0.4196675717830658
+    },
+    {
+      "feature": "local_54",
+      "group": "local",
+      "mean_abs_shap": 0.4030313193798065
+    },
+    {
+      "feature": "local_57",
+      "group": "local",
+      "mean_abs_shap": 0.3553955852985382
+    },
+    {
+      "feature": "agg_69",
+      "group": "aggregated",
+      "mean_abs_shap": 0.350747287273407
+    },
+    {
+      "feature": "local_46",
+      "group": "local",
+      "mean_abs_shap": 0.32365843653678894
+    },
+    {
+      "feature": "local_64",
+      "group": "local",
+      "mean_abs_shap": 0.2844844460487366
+    },
+    {
+      "feature": "agg_67",
+      "group": "aggregated",
+      "mean_abs_shap": 0.26296550035476685
+    },
+    {
+      "feature": "local_88",
+      "group": "local",
+      "mean_abs_shap": 0.25951069593429565
+    },
+    {
+      "feature": "local_15",
+      "group": "local",
+      "mean_abs_shap": 0.2586349844932556
+    },
+    {
+      "feature": "agg_31",
+      "group": "aggregated",
+      "mean_abs_shap": 0.25424903631210327
+    },
+    {
+      "feature": "agg_44",
+      "group": "aggregated",
+      "mean_abs_shap": 0.2535191476345062
+    },
+    {
+      "feature": "local_01",
+      "group": "local",
+      "mean_abs_shap": 0.2486717402935028
+    },
+    {
+      "feature": "agg_12",
+      "group": "aggregated",
+      "mean_abs_shap": 0.2476058155298233
+    },
+    {
+      "feature": "local_07",
+      "group": "local",
+      "mean_abs_shap": 0.2195625603199005
+    },
+    {
+      "feature": "local_04",
+      "group": "local",
+      "mean_abs_shap": 0.21516673266887665
+    },
+    {
+      "feature": "agg_38",
+      "group": "aggregated",
+      "mean_abs_shap": 0.21479704976081848
+    },
+    {
+      "feature": "local_51",
+      "group": "local",
+      "mean_abs_shap": 0.2103886604309082
+    },
+    {
+      "feature": "local_75",
+      "group": "local",
+      "mean_abs_shap": 0.20314335823059082
+    },
+    {
+      "feature": "local_48",
+      "group": "local",
+      "mean_abs_shap": 0.1944185197353363
+    },
+    {
+      "feature": "local_45",
+      "group": "local",
+      "mean_abs_shap": 0.19194179773330688
+    },
+    {
+      "feature": "local_40",
+      "group": "local",
+      "mean_abs_shap": 0.18396177887916565
+    },
+    {
+      "feature": "local_79",
+      "group": "local",
+      "mean_abs_shap": 0.18355286121368408
+    },
+    {
+      "feature": "agg_27",
+      "group": "aggregated",
+      "mean_abs_shap": 0.17980703711509705
+    },
+    {
+      "feature": "agg_37",
+      "group": "aggregated",
+      "mean_abs_shap": 0.17968051135540009
+    },
+    {
+      "feature": "agg_36",
+      "group": "aggregated",
+      "mean_abs_shap": 0.17955467104911804
+    },
+    {
+      "feature": "local_87",
+      "group": "local",
+      "mean_abs_shap": 0.16683757305145264
+    },
+    {
+      "feature": "agg_33",
+      "group": "aggregated",
+      "mean_abs_shap": 0.14688731729984283
+    }
+  ]
+}
