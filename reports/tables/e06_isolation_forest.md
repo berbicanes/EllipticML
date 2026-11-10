@@ -1,0 +1,10 @@
+| Detector         | Features   | Fitted on           | Flag as illicit   |   Rows used |   PR-AUC | PR-AUC 95% CI   |   ROC-AUC |   Recall@100/step |
+|:-----------------|:-----------|:--------------------|:------------------|------------:|---------:|:----------------|----------:|------------------:|
+| Isolation Forest | LF         | all rows, no labels | most anomalous    |      136265 |    0.038 | [0.024, 0.050]  |     0.181 |             0.003 |
+| Isolation Forest | LF         | all rows, no labels | most typical      |      136265 |    0.374 | [0.162, 0.531]  |     0.819 |             0.431 |
+| Isolation Forest | LF         | licit rows only     | most anomalous    |       26432 |    0.037 | [0.023, 0.050]  |     0.167 |             0.005 |
+| Isolation Forest | LF         | licit rows only     | most typical      |       26432 |    0.616 | [0.425, 0.726]  |     0.833 |             0.500 |
+| Isolation Forest | AF         | all rows, no labels | most anomalous    |      136265 |    0.036 | [0.023, 0.050]  |     0.170 |             0.015 |
+| Isolation Forest | AF         | all rows, no labels | most typical      |      136265 |    0.475 | [0.237, 0.633]  |     0.830 |             0.437 |
+| Isolation Forest | AF         | licit rows only     | most anomalous    |       26432 |    0.036 | [0.023, 0.050]  |     0.176 |             0.015 |
+| Isolation Forest | AF         | licit rows only     | most typical      |       26432 |    0.473 | [0.237, 0.633]  |     0.824 |             0.443 |

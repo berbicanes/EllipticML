@@ -1,0 +1,9 @@
+Detector,Features,Fitted on,Flag as illicit,Rows used,PR-AUC,PR-AUC 95% CI,ROC-AUC,Recall@100/step
+Isolation Forest,LF,"all rows, no labels",most anomalous,136265,0.03764351789964911,"[0.024, 0.050]",0.18137860343761383,0.002770083102493075
+Isolation Forest,LF,"all rows, no labels",most typical,136265,0.3741760319359065,"[0.162, 0.531]",0.8186213965623862,0.4312096029547553
+Isolation Forest,LF,licit rows only,most anomalous,26432,0.03712728320162118,"[0.023, 0.050]",0.16667622786965083,0.0046168051708217915
+Isolation Forest,LF,licit rows only,most typical,26432,0.616057520824405,"[0.425, 0.726]",0.833323772130349,0.5004616805170822
+Isolation Forest,AF,"all rows, no labels",most anomalous,136265,0.036242782279642484,"[0.023, 0.050]",0.17038576729039004,0.014773776546629732
+Isolation Forest,AF,"all rows, no labels",most typical,136265,0.47489853200580273,"[0.237, 0.633]",0.8296142327096101,0.43674976915974145
+Isolation Forest,AF,licit rows only,most anomalous,26432,0.036409418679540596,"[0.023, 0.050]",0.1755325261284752,0.014773776546629732
+Isolation Forest,AF,licit rows only,most typical,26432,0.47305866953040043,"[0.237, 0.633]",0.8244674738715249,0.44321329639889195
