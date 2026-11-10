@@ -1,5 +1,5 @@
 # Rebuild every number, table and figure from the raw CSV files.
-#   make all       full pipeline (roughly 2-3 hours on an Apple M4; GNNs use the GPU)
+#   make all       full pipeline (about 3-4 hours on an Apple M4; GNNs use the GPU)
 #   make test      unit and leakage tests
 #   make e04       a single experiment (re-runs it, plus anything it needs that is missing)
 #   make report    compile the written report (needs tectonic: brew install tectonic)
