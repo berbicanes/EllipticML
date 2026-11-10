@@ -120,11 +120,13 @@ def make_model(
 
     ``y_train`` is only needed for ``imbalance='weight'`` with XGBoost and the
     MLP, which take the licit/illicit ratio as a number rather than 'balanced'.
+    ``scale=False`` turns off the StandardScaler (used to reproduce the paper).
     """
     if imbalance not in IMBALANCE:
         raise ValueError(f"imbalance must be one of {IMBALANCE}")
     weight = imbalance == "weight"
     ratio = _ratio(y_train) if weight else 1.0
+    scale_override = params.pop("scale", None)
 
     if name == "LogReg":
         clf = LogisticRegression(
@@ -164,6 +166,8 @@ def make_model(
     else:
         raise ValueError(f"Unknown model {name!r}")
 
+    if scale_override is not None:
+        scale = scale_override
     steps: list[tuple[str, Any]] = []
     if scale:
         steps.append(("scale", StandardScaler()))

@@ -30,6 +30,12 @@ MODEL_COLORS = {
     "IsolationForest": "#000000",
 }
 
+SHORT = {"LogReg": "LR", "RandomForest": "RF", "XGBoost": "XGB", "IsolationForest": "IF"}
+
+
+def short(name: str) -> str:
+    return SHORT.get(name, name)
+
 
 def setup() -> None:
     plt.rcParams.update(
